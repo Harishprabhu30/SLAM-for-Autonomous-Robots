@@ -55,9 +55,9 @@ Link to find Cuda: https://developer.nvidia.com/cuda-downloads
 
 ## Step - 2: Driver Installation: 
 - Select any one option, either open kernel or legacy kernel module flavor
-## Open Kernel Module Flavor:
+#### Open Kernel Module Flavor:
 - sudo apt-get install -y nvidia-open
-## Legacy Kernel Module Flavor:
+#### Legacy Kernel Module Flavor:
 - sudo apt-get install -y cuda-drivers
 
 # Updating Cuda Deep Neural Network Cores (CudaNN)
