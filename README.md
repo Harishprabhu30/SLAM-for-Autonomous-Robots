@@ -26,12 +26,12 @@ Here's a list of sensor, which I'm planning to simulate in Isaac Sim to see how 
 2. Camera (detects and segregates moving humans, static objects, walls); (reflection, low lighting, even overly bright lighting)
 3. Encoders 
 
-<B>** I am using Ubuntu 22.04 to run Isaac Sim and ROS2 <B>
+#### <B>** I am using Ubuntu 22.04 to run Isaac Sim and ROS2 <B>
 
 # Installation of Nvidia Cuda cores: (If updated already, skip this step)
 
 Link to find Cuda: https://developer.nvidia.com/cuda-downloads
-<B>** Currently I'm using Cuda Toolkit 12.8 <B>
+#### <B>** Currently I'm using Cuda Toolkit 12.8 <B>
 
 1. Select the operating system.
 2. Select the archietecture.
