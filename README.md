@@ -37,7 +37,7 @@ Link to find Cuda: https://developer.nvidia.com/cuda-downloads
 2. Select the archietecture.
 3. Select the windows version.
 4. Select the installer type and download.
------ Windows user can downloaded at step 2----- continue to step 3 for Linux Users---------
+#### ----- Windows user can downloaded at step 2----- continue to step 3 for Linux Users---------
 5. Select your distribution (Fedora, Ubuntu, Debian, so on).
 6. Select the version which you are using.
 7. Finally, the Installer type.
