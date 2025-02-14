@@ -33,6 +33,7 @@ Here's a list of sensor, which I'm planning to simulate in Isaac Sim to see how 
 Link to find Cuda: https://developer.nvidia.com/cuda-downloads
 #### <B>** Currently I'm using Cuda Toolkit 12.8 <B>
 
+- Click the above link and follow below:
 1. Select the operating system.
 2. Select the archietecture.
 3. Select the windows version.
