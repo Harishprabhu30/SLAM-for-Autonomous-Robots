@@ -32,7 +32,7 @@ Here's a list of sensor, which I'm planning to simulate in Isaac Sim to see how 
 
 Link to find Cuda: https://developer.nvidia.com/cuda-downloads
 
--- Click the above link and follow below: <B>** Currently I'm using Cuda Toolkit 12.8 <B>
+#### Click the above link and follow below: <B>** Currently I'm using Cuda Toolkit 12.8 <B>
 1. Select the operating system.
 2. Select the archietecture.
 3. Select the windows version.
@@ -42,7 +42,7 @@ Link to find Cuda: https://developer.nvidia.com/cuda-downloads
 6. Select the version which you are using.
 7. Finally, the Installer type.
 
-- Now , you will get the Installation Instruction, Follow that. <B>Else Follow the Steps wriiten below:<B>
+#### Now , you will get the Installation Instruction, Follow that. <B>Else Follow the Steps wriiten below:<B>
 
 ## Step - 1: open terminal and run this code one by one:
 - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
@@ -63,9 +63,8 @@ Link to find Cuda: https://developer.nvidia.com/cuda-downloads
 # Updating Cuda Deep Neural Network Cores (CudaNN)
 
 Link to find CudaNN: https://developer.nvidia.com/cudnn-downloads
-<B>** Currently I'm using Cuda Toolkit 9.7.1<B>
 
-## Follow the steps 1-7 mentioned above in Cuda Core Installation untill you get the Installation Instruction. Once you reach here, Follow Below:
+## Follow the steps 1-7 mentioned above in Cuda Core Installation untill you get the Installation Instruction. Once you reach here, Follow Below: <B>** Currently I'm using Cuda Toolkit 9.7.1<B>
 
 1. Click the download button and you will see .deb file downloading.
 2. open Terminal and carefully, Choose the directory where the file is downloaded. Write these one by one:
