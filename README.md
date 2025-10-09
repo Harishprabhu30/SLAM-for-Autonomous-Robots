@@ -75,6 +75,12 @@ Link to find CudaNN: https://developer.nvidia.com/cudnn-downloads
 - sudo apt-get -y install cudnn
 
 3. Correctly specify the version of Cuda cores that you installed in the below code:
+
 sudo apt-get -y install cudnn-cuda-12
 
 <B>----- Cores are updated -----<B>
+
+
+
+#####################################################################################################################
+new version isaac sim installed 5.0.0 to be updated here! 
