@@ -1,0 +1,33 @@
+# Ignore everything by default
+*
+
+# But track these:
+!.gitignore
+!code_files/
+!README.md
+
+# Inside code_files, ignore environment or temp stuff
+code_files/python_env/
+code_files/__pycache__/
+code_files/*.log
+code_files/*.tmp
+code_files/.vscode/
+code_files/*.pyc
+# ROS2 workspace - ignore everything inside ros2_humble
+ros2_humble/
+
+# Python virtual environments
+code_files/slam_python_env/
+venv/
+.env/
+*.env/
+
+# Cache and logs
+**/__pycache__/
+**/*.pyc
+log/
+logs/
+
+# Editor configs
+.vscode/
+.idea/
