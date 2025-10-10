@@ -1,33 +1,20 @@
 # Ignore everything by default
 *
 
-# But track these:
+# Allow these specific files and folders
 !.gitignore
-!code_files/
 !README.md
+!code_files/
+!1_isaac_world_prim_code.py
+!2_list_jointlike_prims.py
+!3_Articulation_root_check.py
+!first_ros_run_jetbot.usd
 
-# Inside code_files, ignore environment or temp stuff
+# Inside code_files, ignore virtual envs and temp files
 code_files/python_env/
 code_files/__pycache__/
-code_files/*.log
-code_files/*.tmp
 code_files/.vscode/
 code_files/*.pyc
-# ROS2 workspace - ignore everything inside ros2_humble
-ros2_humble/
+code_files/*.log
+code_files/*.tmp
 
-# Python virtual environments
-code_files/slam_python_env/
-venv/
-.env/
-*.env/
-
-# Cache and logs
-**/__pycache__/
-**/*.pyc
-log/
-logs/
-
-# Editor configs
-.vscode/
-.idea/
