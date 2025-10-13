@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
         'cmd_vel_pub_py = jetbot_control.cmd_vel_pub_py:main',
         'odom_sub_py = jetbot_control.odom_sub_py:main',
+        'camera_sub_py = jetbot_control.camera_sub_py:main',
         ],
     },
 )
