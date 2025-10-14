@@ -17,12 +17,15 @@ class cmdVelPub(Node):
 		t = Twist()
 		
 		#simple sequence: forward, rotate. stop
-		if self.step < 500:
-			t.linear.x = 0.15
+		if self.step < 300:
+			t.linear.x = 0.10
 			t.angular.z = 0.0
-		elif self.step < 1000:
+		elif self.step < 500:
 			t.linear.x = 0.0
-			t.angular.z = 0.5
+			t.angular.z = 0.2
+		elif self.step < 800:
+			t.linear.x = 0.10
+			t.angular.z = 0.0
 		else:
 			t.linear.x = 0.0
 			t.angular.z = 0.0

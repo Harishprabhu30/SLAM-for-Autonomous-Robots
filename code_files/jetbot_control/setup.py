@@ -10,6 +10,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/ament_index/resource_index/packages', ['resource/jetbot_control']),
+    	('share/jetbot_control/launch', ['launch/jetbot_all.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
