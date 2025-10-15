@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+print("Develop branch version")
 
 import rclpy
 from rclpy.node import Node
