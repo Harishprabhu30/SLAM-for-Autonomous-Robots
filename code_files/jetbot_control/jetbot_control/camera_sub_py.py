@@ -1,6 +1,3 @@
-print("Develop branch version")
-
-
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -40,10 +37,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-<<<<<<< HEAD
     	#node.cleanup()
-=======
->>>>>>> main
         node.destroy_node()
         cv2.destroyAllWindows()
         rclpy.shutdown()

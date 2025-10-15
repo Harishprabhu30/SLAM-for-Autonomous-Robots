@@ -1,10 +1,9 @@
-print("Develop branch version")
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
-<<<<<<< HEAD
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+
+from launch.actions import TimerAction
 
 def generate_launch_description():
     # Find the package share folder (first jetbot_control/)
@@ -12,6 +11,21 @@ def generate_launch_description():
 
     # Correct path to ekf.yaml in config/ (do NOT add extra 'jetbot_control')
     ekf_config = PathJoinSubstitution([pkg_share, 'config', 'ekf.yaml'])
+    
+    # Define EKF node separately
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[ekf_config, {'use_sim_time': True}],  # important for Isaac Sim
+    )
+
+    # Delay EKF startup by 3 seconds
+    delayed_ekf = TimerAction(
+        period=3.0,
+        actions=[ekf_node]
+    )
 
     return LaunchDescription([
         Node(
@@ -33,13 +47,7 @@ def generate_launch_description():
         #     name='camera_sub_py',
         #     output='screen',
         # ),
-        Node(
-            package='robot_localization',
-            executable='ekf_node',
-            name='ekf_filter_node',
-            output='screen',
-            parameters=[ekf_config],  # Load your EKF YAML correctly
-        ),
+        delayed_ekf,
     ])
 
 
@@ -66,33 +74,3 @@ def generate_launch_description():
 #    ])
 
 
-=======
-
-def generate_launch_description():
-	return LaunchDescription([
-		Node(
-			package='jetbot_control',
-			executable='cmd_vel_pub_py',
-			name='cmd_vel_pub_py',
-			output='screen',
-			arguments=['--ros-args', '--log-level', 'INFO']
-		),
-		Node(
-			package='jetbot_control',
-			executable='odom_sub_py',
-			name='odom_sub_py',
-			output='screen',
-			arguments=['--ros-args', '--log-level', 'INFO']
-		),
-		Node(
-			package='jetbot_control',
-			executable='camera_sub_py',
-			name='camera_sub_py',
-			output='screen',
-			arguments=['--ros-args', '--log-level', 'INFO']
-		)
-	])
-
-	#self.get_logger().info(f"[{self.get_clock().now().to_msg().sec}] Jetbot x={pos.x:.2f}, y={pos.y:.2f}")
-
->>>>>>> main
