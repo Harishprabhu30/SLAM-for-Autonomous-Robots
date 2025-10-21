@@ -9,3 +9,6 @@ ekf_filter_node:
     two_d_mode: true
     publish_tf: true
     disabled_at_startup: false
+    use_sim_time: true
+    tf_buffer_duration: 5.0
+

@@ -40,6 +40,13 @@ def generate_launch_description():
             name='odom_with_cov_pub_py',
             output='screen',
         ),
+        Node(
+            package='jetbot_control',
+            executable='tf_broadcaster_sim',
+            name='tf_broadcaster_sim',
+            output='screen',
+            parameters=[{'use_sim_time': True}],
+        ),
         # Uncomment if you want camera node
         # Node(
         #     package='jetbot_control',
