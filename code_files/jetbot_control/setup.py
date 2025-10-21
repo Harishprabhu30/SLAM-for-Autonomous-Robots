@@ -33,6 +33,7 @@ setup(
         'console_scripts': [
             'cmd_vel_pub_py = jetbot_control.cmd_vel_pub_py:main',
             'odom_with_cov_pub_py = jetbot_control.odom_with_cov_pub_py:main',
+            'tf_broadcaster_sim = jetbot_control.tf_broadcaster_sim:main',
 #            'camera_sub_py = jetbot_control.camera_sub_py:main',
         ],
     },
