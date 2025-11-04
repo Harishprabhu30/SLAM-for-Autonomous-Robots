@@ -4,6 +4,7 @@
 # Allow these specific files and folders
 !.gitignore
 !README.md
+!code_files/
 !code_files/**
 !1_isaac_world_prim_code.py
 !2_list_jointlike_prims.py
