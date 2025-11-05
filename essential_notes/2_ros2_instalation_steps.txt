@@ -1,0 +1,110 @@
+two ways to install ros2
+
+1. binary package - it installs necssary dependencies automatically nad updates alongside, but need root access to install deb packages; 
+
+2. building form source - best for devs, provides latest version.
+
+installing ros2 from source: 
+documentation link: https://docs.ros.org/en/humble/Installation/Alternatives/Ubuntu-Development-Setup.html
+
+1. locale changed to en_US.UTF-8:
+
+########333 code ##########3
+locale  # check for UTF-8
+
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+locale  # verify settings
+
+###############################3
+2. ensured ubunutu universe repos is enabled:
+
+##############3 code ###############3
+sudo apt install software-properties-common
+sudo add-apt-repository universe
+
+###############################
+
+3. installed curl:
+
+############# code ###############3
+sudo apt update && sudo apt install curl -y
+export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')
+curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb"
+sudo dpkg -i /tmp/ros2-apt-source.deb
+
+############################################3
+
+4. installed dev tools and ros tools:
+
+############## code ####################
+sudo apt update && sudo apt install -y \
+  python3-flake8-docstrings \
+  python3-pip \
+  python3-pytest-cov \
+  ros-dev-tools
+
+#################################
+
+sudo apt install -y \
+   python3-flake8-blind-except \
+   python3-flake8-builtins \
+   python3-flake8-class-newline \
+   python3-flake8-comprehensions \
+   python3-flake8-deprecated \
+   python3-flake8-import-order \
+   python3-flake8-quotes \
+   python3-pytest-repeat \
+   python3-pytest-rerunfailures
+
+
+5. created workspace inside project folder
+mkdir -p ~/ros2_humble/src
+cd ~/ros2_humble
+vcs import --input https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos src
+
+6. installed dependencies using rosdep:
+############3 code ##############
+sudo apt upgrade
+
+sudo rosdep init
+rosdep update
+rosdep install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers"
+
+#######################################
+
+7. Build the workspace:
+cd ~/ros2_humble/
+colcon build --symlink-install
+
+comment: Finally,. it took more than 1hour to colcon build ros2_humble. 
+#######################################
+
+8. Environment setup: Sourcing the setup script
+
+################33 code ################
+. ~/ros2_humble/install/local_setup.bash
+
+#######################################
+
+9. try some examples: yay if works!!!
+
+ros2 working!!!!!!!!!!!!
+
+
+
+sourcing code of ros2: source /home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/setup.bash
+
+#######################################################
+Next steps:
+
+initialize github repo to ros2_humble/src for versioning, branching, tracking everything we do for this theiss.
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+To check the connected monitor:
+xrandr -q
+
+Command to lower brightness
+xrandr --output DP-2 --brightness 0.7
+

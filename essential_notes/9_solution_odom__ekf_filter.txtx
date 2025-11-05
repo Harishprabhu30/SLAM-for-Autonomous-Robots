@@ -1,0 +1,7 @@
+the problem with the ekf.yaml was path issue:
+
+in the setup.py, we needed to add this lines to share the package. but we missed and it was the issue of odometery recieving no data.
+
+
+        # ('share/jetbot_control/config', ['config/ekf.yaml']),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),

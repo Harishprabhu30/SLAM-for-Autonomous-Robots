@@ -1,0 +1,73 @@
+step1 :
+
+create a ros2 package inside ros2_humble/src using the command:"
+
+ros2 pkg create --build-type ament_python jetbot_control
+
+following the above: this folder structure will be created:
+jetbot_control/
+├── package.xml
+├── setup.py
+├── setup.cfg
+├── resource/jetbot_control
+└── jetbot_control/__init__.py
+
+Go inside this: cd ~/ros2_humble/src/jetbot_control/jetbot_control
+
+create a py file named: 
+jetbot_control/
+├── jetbot_control/
+│   ├── __init__.py
+│   └── cmd_vel_pub_py.py
+...
+
+to make it executable, command is: 
+
+chmod +x cmd_vel_pub_py.py
+
+once the executable is done.
+
+then edit setup.py and enter the entry point under console_scripts:
+
+entry_points={
+    'console_scripts': [
+        'cmd_vel_pub_py = jetbot_control.cmd_vel_pub_py:main',
+    ],
+},
+
+
+do this to create a package: 
+
+cd ~/ros2_humble
+colcon build --packages-select jetbot_control
+source install/setup.bash
+
+then while keeping isaac runnning with ROS2 bridge active and jetbot ready, do this:
+
+ros2 run jetbot_control cmd_vel_pub_py
+
+
+Now, again i created a file inside jetbot_control/jetbot_control: odom_sub_py.py
+
+i wrote the code. Now i make it as executeable by running chmod +x odom_sub_py.py
+
+then edit setup.py and enter the entry point under console_scripts:
+
+entry_points={
+    'console_scripts': [
+        'cmd_vel_pub_py = jetbot_control.cmd_vel_pub_py:main',
+        'odom_sub_py = jetbot_control.odom_subscriber_py:main',
+    ],
+},
+
+
+then do this to create a package: 
+
+cd ~/ros2_humble
+colcon build --packages-select jetbot_control
+source install/setup.bash
+
+then while keeping isaac runnning with ROS2 bridge active and jetbot ready, do this:
+
+ros2 run jetbot_control odom_sub_py
+

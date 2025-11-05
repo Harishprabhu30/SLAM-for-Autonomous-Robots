@@ -1,0 +1,208 @@
+## Logging and Debugging Levels:
+
+-- Log levels:
+
+You can log messages by severity:
+
+-----code------
+self.get_logger().debug('Debug info')
+self.get_logger().info('Normal info')
+self.get_logger().warn('Something odd')
+self.get_logger().error('Something failed')
+self.get_logger().fatal('Critical failure!')
+
+-------------------------------
+
+-- run with a chosen log level:
+
+-----code------
+ros2 run jetbot_control odom_sub_py --ros-args --log-level DEBUG
+-------------------------------
+
+-- Timestamped log:
+
+-----code------
+
+now = self.get_clock().now().to_msg()
+self.get_logger().info(f"[{now.sec}.{now.nanosec}] Pose x={pos.x:.2f}")
+------------------------------------------
+
+-- Debugging Tools:
+
+| Tool                  | Command                                    | What it shows                   |
+| --------------------- | ------------------------------------------ | ------------------------------- |
+| **Check node graph**  | `ros2 node list` / `ros2 node info <name>` | All active nodes + their topics |
+| **Check connections** | `ros2 topic info /odom`                    | Which nodes publish/subscribe   |
+| **Echo messages**     | `ros2 topic echo /cmd_vel`                 | Live values                     |
+| **Frequency**         | `ros2 topic hz /odom`                      | Publishing rate                 |
+| **Topic types**       | `ros2 topic type /odom`                    | Message type                    |
+| **TF tree**           | `ros2 run tf2_tools view_frames`           | Generates PDF of TF tree        |
+| **Bag replay**        | `ros2 bag play mybag`                      | Re-run a recorded simulation    |
+
+
+###########################################################
+## setting log level in ros2 Launch file:
+
+-- Option 1:
+
+Inside your jetbot_all.launch.py, you can set log level globally:
+
+-----------code---------------
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='jetbot_control',
+            executable='jetbot_node',
+            name='jetbot_node',
+            output='screen',
+            arguments=['--ros-args', '--log-level', 'INFO']
+        )
+    ])
+    
+    -------------------------------------------------------
+    then run: ros2 launch jetbot_control jetbot_all.launch.py
+
+
+-- Option 2: Set log level from command line (for a specific node):
+
+If you’re debugging or testing a single node, you can use:
+
+-------------code----------------
+ros2 run jetbot_control jetbot_node --ros-args --log-level INFO
+--------------------------------------
+
+-- Option 3: Using launch argument substitution:
+
+If you want to control the log level dynamically:
+
+In your .launch.py:
+
+---------------code-----------------
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
+
+def generate_launch_description():
+    log_level = LaunchConfiguration('log_level', default='info')
+    return LaunchDescription([
+        DeclareLaunchArgument('log_level', default_value='info'),
+        Node(
+            package='jetbot_control',
+            executable='jetbot_node',
+            output='screen',
+            arguments=['--ros-args', '--log-level', log_level]
+        )
+    ])
+    
+-------------------------------------------------------------
+
+then, run: ros2 launch jetbot_control jetbot_all.launch.py log_level:=info
+
+
+##############################3 INTERPRETING LOG AND DEBUG MESSAGES #################################3
+-- OUTPUT LOOKS LIKE THIS:
+
+[INFO] [launch]: All log files can be found below /home/vgtu/.ros/log/2025-10-14-17-37-32-671887-vgtu-B450M-DS3H-31281
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [cmd_vel_pub_py-1]: process started with pid [12345]
+[cmd_vel_pub_py-1] [INFO] [1697042135.213456789] [cmd_vel_pub_py]: Publishing velocity commands...
+[odom_sub_py-2] [INFO] [1697042136.111111111] [odom_sub_py]: Received odometry message.
+
+
+
+EXPLANATION:
+
+| Section                  | Meaning                                                             |
+| ------------------------ | ------------------------------------------------------------------- |
+| `[INFO]`                 | Log **severity level** — can be DEBUG, INFO, WARN, ERROR, or FATAL. |
+| `[cmd_vel_pub_py-1]`     | The **node name** and process index (`-1`, `-2`, etc.).             |
+| `[1697042135.213456789]` | The **timestamp** (ROS 2 time, often simulated time).               |
+| `[cmd_vel_pub_py]: ...`  | The actual **message** your node printed.                           |
+
+
+##############333 Log levels table ################33
+
+| Level   | Meaning                             | Typical Use                      |
+| ------- | ----------------------------------- | -------------------------------- |
+| `DEBUG` | Very detailed internal info         | Development time debugging       |
+| `INFO`  | Normal operation messages           | Confirming expected behavior     |
+| `WARN`  | Something unexpected, but not fatal | Sensor delay, retry, etc.        |
+| `ERROR` | Recoverable failure                 | Missing topic, failed connection |
+| `FATAL` | Critical failure                    | Node crash, unrecoverable        |
+
+
+You can set it in launch files:
+
+arguments=['--ros-args', '--log-level', 'DEBUG']
+
+
+or dynamically:
+
+ros2 run jetbot_control cmd_vel_pub_py --ros-args --log-level DEBUG
+
+as shown above.
+
+
+#################################### DEBUGGING WORKFLOW ##############################33
+-- Step 1: Check for syntax / launch errors:
+
+If you see something like:
+
+[ERROR] [launch]: Caught exception in launch: SyntaxError: invalid syntax
+
+
+→ The issue is Python syntax inside .launch.py.
+
+
+-----------------------------
+
+-- Step 2: Look for [ERROR] or [FATAL] lines:
+
+Example:
+
+[ERROR] [odom_sub_py-2]: Could not connect to /odom topic
+
+
+→ The node ran, but couldn’t subscribe.
+
+THEN, Run:
+
+ros2 topic list
+ros2 topic echo /odom
+
+
+to check if the topic exists.
+
+----------------------------------------
+
+-- Step 3: Re-run a single node manually:
+
+If a node keeps failing:
+
+ros2 run jetbot_control odom_sub_py --ros-args --log-level DEBUG
+
+
+This way, you see only that node’s output clearly.
+
+-----------------------------------------
+
+-- Step 4: Use rqt_console and rqt_logger_level:
+
+Install if not already:
+
+sudo apt install ros-humble-rqt-console ros-humble-rqt-logger-level
+
+
+Then run:
+
+rqt_console
+
+
+and it’ll show a GUI log viewer (filters by level, node, timestamp).
+rqt_logger_level lets you change log levels at runtime.
+
+

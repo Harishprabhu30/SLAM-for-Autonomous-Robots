@@ -1,0 +1,120 @@
+## trying this on dev branch on my github, without disturbing the main branch.
+
+# using package named: robot_localization - > it has ekf_node and ukf_node for fusing odometry, IMU, GPS, etc. available in ROS2 Humble
+
+-- step 1: 
+
+install via: sudo apt install ros-humble-robot-localization
+
+
+-- step 2:
+
+Create a config folder in your package:
+
+mkdir -p ~/ros2_humble/src/jetbot_control/config
+
+-- step 3:
+
+Create a file ekf.yaml:
+
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0
+    two_d_mode: true
+    publish_tf: true
+
+    # Input topics
+    odom0: /odom
+    odom0_config: [true, true, false,  # x, y, z
+                   false, false, true,  # roll, pitch, yaw
+                   true, true, false,   # vx, vy, vz
+                   false, false, true,  # vroll, vpitch, vyaw
+                   false, false, false] # ax, ay, az
+    odom0_differential: false
+    odom0_relative: false
+
+    imu0: /imu
+    imu0_config: [false, false, false,
+                  true, true, true,
+                  false, false, false,
+                  true, true, true,
+                  false, false, false]
+    imu0_differential: false
+    imu0_relative: false
+
+    world_frame: odom
+    odom_frame: odom
+    base_link_frame: chassis
+
+
+### omitting imu part as my current learning project jetbot has no imu sensor.
+
+-- step 4:
+ Modify the launch file:
+ 
+ ------------- code ---------------
+from launch_ros.actions import Node
+from launch_ros.descriptions import ParameterValue
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+
+def generate_launch_description():
+    pkg_share = FindPackageShare('jetbot_control').find('jetbot_control')
+    ekf_config = PathJoinSubstitution([pkg_share, 'config', 'ekf.yaml'])
+
+    return LaunchDescription([
+        # existing nodes ...
+        Node(
+            package='robot_localization',
+            executable='ekf_node',
+            name='ekf_filter_node',
+            output='screen',
+            parameters=[ekf_config]
+        ),
+    ])
+
+----------------------------
+
+-- step 5:
+
+Rebuild and source:
+
+cd ~/ros2_humble
+colcon build --packages-select jetbot_control
+source install/setup.bash
+
+
+Then:
+
+ros2 launch jetbot_control jetbot_all.launch.py
+
+-----------------------------------------------------
+
+-- Step 6:
+
+Verify EKF Output
+
+Check the new topics:
+
+ros2 topic list
+
+
+You should see:
+
+/odometry/filtered
+
+-- Step 7:
+
+Visualize in RViz:
+
+Fixed Frame: odom
+
+Add → Odometry → Topic = /odometry/filtered
+
+Compare filtered trajectory vs raw /odom.
+
+✅ You’ll see smoother motion and less drift.
+
+###############################3
+
+Explanation of yaml: [to be learnt and written here....]

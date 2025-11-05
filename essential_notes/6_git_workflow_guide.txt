@@ -1,0 +1,74 @@
+-- Step 1: Commit and push your current update to main
+
+Make sure you’re currently on the main branch:
+
+git status
+
+
+If it shows you’re on main, great.
+If not, switch to it:
+
+git checkout main
+
+Now add and commit your latest changes:
+
+git add .
+git commit -m "Update: latest working version before EKF feature"
+
+
+Then push it to GitHub:
+
+git push origin main
+
+At this point, your main branch is up to date on GitHub with your current working code.
+
+##########################33
+
+-- Step 2: Switch to or create your feature branch for EKF
+
+If you’ve already created the branch remotely, fetch it and switch:
+
+git fetch origin
+git checkout feature/ekf_filter
+
+
+If you haven’t created it yet, you can create and switch locally in one step:
+
+git checkout -b feature/ekf_filter
+
+
+This makes a new branch from the latest main.
+
+Now push it to GitHub:
+
+git push -u origin feature/ekf_filter
+
+#######################################
+
+-- Step 3: Add your new EKF filter folder
+
+In your project folder (e.g., jetbot_control/), create your new EKF filter module:
+
+jetbot_control/
+├── config/
+│   ├── ekf.yaml 
+│   ├──
+│   └──
+
+
+Then commit and push the feature changes:
+
+git add .
+git commit -m "Feature: Added EKF filter module"
+git push
+
+##############################################
+
+-- Step 4: Merge later when ready
+
+Once your EKF feature is tested and stable, merge it back into main:
+
+git checkout main
+git pull origin main
+git merge feature/ekf_filter
+git push origin main

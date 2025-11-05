@@ -1,0 +1,70 @@
+1. The EKF does not subscribe to raw images. It fuses pose/odometry measurements. So you need an intermediate node that turns camera frames into odometry (visual odometry / VIO / VO).
+
+2. I have already implemented camera node, i had commented them in launch and setup files to avoid fps drops. Now, uncomment them and this is enable it to publish images and camera_info.
+
+3. Run a visual odometry (VO) node that subscribes to those images and publishes nav_msgs/Odometry (pose + twist) — this is the camera’s odometry.
+
+4. Configure ekf_node to also subscribe to that camera odometry topic (in ekf.yaml) and give it an appropriate *_config and measurement covariances.
+
+5. Ensure frames & timestamps & covariances are correct.
+
+6. Test — compare /odometry/filtered to /odom (already recorded).
+
+**Why the extra VO node? (Important)**
+
+1. EKF expects numeric measurements (position, orientation, velocities) with covariance — not raw images.
+
+2. The camera node that opens an OpenCV window is fine for visualization, but you must also run a VO/VIO algorithm (ORB-SLAM, VINS-Mono, OpenVSLAM, or a simple optical-flow based estimator) to produce nav_msgs/Odometry.
+
+Dataflow:
+
+camera (images) ─► visual odometry (ORB-SLAM / VIO) ─► /camera/odom (nav_msgs/Odometry)
+wheel encoders ─► /odom (nav_msgs/Odometry)
+camera & odom ─► ekf_node ─► /odometry/filtered
+
+#####################################################################################
+To Do:
+
+1. Uncomment camera publisher.
+2. Add a VO node:
+	2.1. Input: /camera/image_raw, /camera/camera_info
+	2.2. Output: /camera/odom (type nav_msgs/Odometry)
+	2.3. header.frame_id typically "odom" or "camera_odom" and 			child_frame_id should be "base_link" (or you provide a TF from camera_link→base_link). Keep frames consistent.
+
+3. EKF node subscription:
+	3.1. Add the camera odometry topic to your ekf.yaml (as a second odometry source).
+	3.2. Configure odomX_config (12 booleans) so EKF knows which pose/twist components to use from the camera.
+	3.3. Set measurement covariances for the camera odom (pose and twist covariances in the published nav_msgs/Odometry) OR set odomX_pose_covariance and odomX_twist_covariance in ekf.yaml if you prefer the EKF-side settings. Lower covariance = higher trust.
+
+4. Frames and TF:
+	4.1. Keep consistent frame naming: map (if using map later), odom, base_link, camera_link.
+	4.2. VO output’s pose frame should align with the EKF frame conventions (usually everything referenced to odom).
+	4.3. Provide a static transform from camera_link → base_link (extrinsics). EKF needs consistent transforms.
+
+5. Rates & timestamps:
+
+	5.1. Make sure all messages are timestamped with ROS time (Isaac sim should do that when bridged).
+
+	5.2. Ensure VO publishes at a steady rate (10–30 Hz typical). EKF handles asynchronous sources but stable rates help.
+	
+6. Covariance tuning:
+
+	6.1. Wheel odom: typically low covariance in forward direction but higher for yaw drift.
+
+	6.2. Camera odom: depends on your VO — generally noisier so set moderate covariances but it's often more drift-free in yaw/position.
+
+	6.3. You will tune these after observing results.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

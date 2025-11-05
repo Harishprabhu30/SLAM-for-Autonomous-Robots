@@ -1,0 +1,80 @@
+Error 1:
+
+code: ros2 topic hz /odometry/filtered 
+
+WARNING: topic [/odometry/filtered] does not appear to be published yet
+
+---------------
+Error 2:
+
+code: ros2 topic echo /odom | head -n 10
+
+header: stamp: sec: 145 nanosec: 200007572 frame_id: odom child_frame_id: chassis pose: pose: position: x: 0.09508950968507074 Traceback (most recent call last): File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/ros2cli/bin/ros2", line 33, in <module> sys.exit(load_entry_point('ros2cli', 'console_scripts', 'ros2')()) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/build/ros2cli/ros2cli/cli.py", line 91, in main rc = extension.main(parser=parser, args=args) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/build/ros2topic/ros2topic/command/topic.py", line 41, in main return extension.main(args=args) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/build/ros2topic/ros2topic/verb/echo.py", line 235, in main self.subscribe_and_spin( File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/build/ros2topic/ros2topic/verb/echo.py", line 278, in subscribe_and_spin rclpy.spin(node) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin executor.spin_once() File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/executors.py", line 773, in spin_once self._spin_once_impl(timeout_sec) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/executors.py", line 770, in _spin_once_impl raise handler.exception() File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/task.py", line 254, in __call__ self._handler.send(None) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/executors.py", line 463, in handler await call_coroutine(entity, arg) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/executors.py", line 382, in _execute_subscription await await_or_execute(sub.callback, msg) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/install/rclpy/local/lib/python3.10/dist-packages/rclpy/executors.py", line 107, in await_or_execute return callback(*args) File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/build/ros2topic/ros2topic/verb/echo.py", line 299, in _subscriber_callback self.print_func( File "/home/vgtu/Downloads/Harish_Thesis/ros2_humble/build/ros2topic/ros2topic/verb/echo.py", line 311, in _print_yaml print( BrokenPipeError: [Errno 32]
+
+Broken pipe Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'> BrokenPipeError: [Errno 32] Broken pipe vgtu@vgtu-B450M-DS3H:~/Downloads/Harish_
+
+
+------------------------------
+Error 3:
+
+code: ros2 topic echo /odometry/filtered | head -n 10
+
+not printing anything.
+
+
+----------------------------------
+
+
+Debugging Steps:
+
+This behavior tells us that your EKF node (ekf_filter_node) has started but isn’t actually publishing /odometry/filtered.
+
+-- Step 1: 
+
+✅ /odom → publishing correctly (confirmed)
+❌ /odometry/filtered → not being published yet
+⚠️ That means EKF node is running but not producing output, usually due to one of the following:
+
+| Possible Issue                      | Explanation                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| Topic mismatch                      | The input topic name in `ekf.yaml` doesn’t match the actual `/odom` topic name  |
+| TF frame mismatch                   | The frame IDs (`odom`, `chassis`) in your config don’t match your Isaac TF tree |
+| No valid input messages received    | EKF node doesn’t publish until it gets a valid first input                      |
+| Parameter path or YAML format issue | Node loaded but parameters not properly applied                                 |
+
+---------------------------------
+-- Step 2:
+
+Let’s Check if the EKF Node Is Alive
+
+Run this:
+
+ros2 node list
+
+
+✅ You should see something like:
+
+/ekf_filter_node
+
+
+If you don’t, your launch file may not have loaded it correctly.
+
+Then check if it’s subscribing:
+
+ros2 node info /ekf_filter_node
+
+
+You should see something like:
+
+Subscribers:
+  /odom
+  /imu (optional)
+Publishers:
+  /odometry/filtered
+  /tf
+  /diagnostics
+
+
+If you don’t see /odom under Subscribers, that means your EKF config isn’t connected correctly to your odometry topic.
+
+

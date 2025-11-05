@@ -1,0 +1,248 @@
+to run all the nodes combined together, 
+
+1. create a launch folder inside the ros2_humble/src/jetbot_control - the package folder as launch
+
+2. inside this launch folder, create a file named: jetbot_all.launch.py
+
+3. telling ros2 about this file: in setup.py, add this data files.
+
+data_files=[
+    ('share/ament_index/resource_index/packages', ['resource/jetbot_control']),
+    ('share/jetbot_control/launch', ['launch/jetbot_all.launch.py']),
+],
+
+4. rebuild and source:
+
+cd ~/ros2_humble
+colcon build --packages-select jetbot_control
+source install/setup.bash
+
+
+5. then start the launch file:
+
+ros2 launch jetbot_control jetbot_all.launch.py
+
+
+6. run sim and check if its working
+
+################################################################3
+optional:
+
+Add structured logging
+
+You can upgrade your logging to include timestamps or severity levels:
+
+self.get_logger().info(f"[{self.get_clock().now().to_msg().sec}] Jetbot x={pos.x:.2f}, y={pos.y:.2f}")
+
+
+Use:
+
+.info() for status updates
+
+.warn() for minor issues
+
+.error() for critical errors
+
+
+################################################################3
+ROS2 bag - to test on datasets and debugging:
+
+ros2 bag record /cmd_vel /odom /rgb /tf
+
+explanation:
+This starts recording messages published on those topics into a bag file (basically a database of all your ROS2 messages, for playback and analysis).
+
+data flow will be:
+
+rosbag2_2025_10_14-15_07_13/
+├── metadata.yaml
+└── rosbag2_2025_10_14-15_07_13_0.db3
+
+-- To stop recording
+
+Press: Ctrl + C
+
+-- To check what you recorded
+
+Run: ros2 bag info rosbag2_2025_10_14-15_07_13
+
+-- Optional: give your bag a custom name
+
+You can specify a name with -o:
+
+ros2 bag record -o jetbot_run_1 /cmd_vel /odom /rgb /tf
+
+Then you can replay later with:
+
+ros2 bag play jetbot_run_1
+
+You can inspect recorded topics anytime:
+
+ros2 bag info jetbot_run_1
+
+
+
+you see this when u run ros2 bag info:
+
+Files:             rosbag2_2025_10_14-15_07_13_0.db3
+Bag size:          3.8 GiB
+Storage id:        sqlite3
+Duration:          95.411440451s
+Start:             Oct 14 2025 15:07:13.593613952 (1760443633.593613952)
+End:               Oct 14 2025 15:08:49.005054403 (1760443729.005054403)
+Messages:          9685
+Topic information: Topic: /tf | Type: tf2_msgs/msg/TFMessage | Count: 5872 | Serialization Format: cdr
+                   Topic: /rgb | Type: sensor_msgs/msg/Image | Count: 1468 | Serialization Format: cdr
+                   Topic: /odom | Type: nav_msgs/msg/Odometry | Count: 1469 | Serialization Format: cdr
+                   Topic: /cmd_vel | Type: geometry_msgs/msg/Twist | Count: 876 | Serialization Format: cdr
+                   
+                   
+                   
+Explanation:
+
+| Topic      | Type                      | Message Count | Notes                                                       |
+| ---------- | ------------------------- | ------------- | ----------------------------------------------------------- |
+| `/tf`      | `tf2_msgs/msg/TFMessage`  | 5872          | High frequency — transforms are often published at 30–60 Hz |
+| `/rgb`     | `sensor_msgs/msg/Image`   | 1468          | Camera images — large data chunk (~3 GB of your bag)        |
+| `/odom`    | `nav_msgs/msg/Odometry`   | 1469          | Robot odometry data                                         |
+| `/cmd_vel` | `geometry_msgs/msg/Twist` | 876           | Velocity commands                                           |
+
+
+
+
+#########################3
+Replay the recorded data
+
+You can replay everything with:
+
+ros2 bag play rosbag2_2025_10_14-15_07_13
+
+
+💡 This will republish all topics (/tf, /rgb, /odom, /cmd_vel) exactly as recorded, with the same timing.
+
+
+#############################3
+Replay only selected topics
+
+For example, to replay only /odom and /cmd_vel:
+
+ros2 bag play rosbag2_2025_10_14-15_07_13 --topics /odom /cmd_vel
+
+###############################3
+Control playback speed
+
+Slow down to half speed:
+
+ros2 bag play rosbag2_2025_10_14-15_07_13 --rate 0.5
+
+
+Speed up 3× faster:
+
+ros2 bag play rosbag2_2025_10_14-15_07_13 --rate 3.0
+
+################################3333
+View frame by frame (useful for debugging)
+
+You can inspect the .db3 file directly with:
+
+ros2 bag info -y rosbag2_2025_10_14-15_07_13
+
+or
+
+sqlite3 rosbag2_2025_10_14-15_07_13/rosbag2_2025_10_14-15_07_13_0.db3
+
+
+to browse raw data tables (messages, topics, etc.).
+
+
+
+
+#################################3
+EXTRACTING CAMERA FRAMES:
+
+1. Check dependencies:
+
+Make sure you have these Python tools installed (in your ROS2 environment):
+
+sudo apt install ros-humble-rosbag2-storage-defaults
+sudo apt install ros-humble-cv-bridge python3-opencv
+
+If cv_bridge was built manually (as you did earlier), ensure it’s properly sourced:
+
+source ~/Downloads/Harish_Thesis/ros2_humble/install/setup.bash
+
+2. Create a Python extraction script:
+
+Create a file called extract_rgb_from_bag.py in any folder (e.g., ~/Downloads/Harish_Thesis/scripts):
+
+
+-----------PYTHON CODE----------
+
+import os
+import cv2
+import numpy as np
+from rclpy.serialization import deserialize_message
+from sensor_msgs.msg import Image
+from rosidl_runtime_py.utilities import get_message
+import rosbag2_py
+
+# -------- CONFIG --------
+bag_path = '/home/vgtu/Downloads/Harish_Thesis/ros2_humble/rosbag2_2025_10_14-15_07_13'
+output_dir = './extracted_rgb_frames'
+topic_name = '/rgb'
+# -------------------------
+
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+# Open the ROS2 bag reader
+storage_options = rosbag2_py.StorageOptions(uri=bag_path, storage_id='sqlite3')
+converter_options = rosbag2_py.ConverterOptions('', '')
+reader = rosbag2_py.SequentialReader()
+reader.open(storage_options, converter_options)
+
+# Find the topic ID for /rgb
+topic_types = reader.get_all_topics_and_types()
+image_topic_type = None
+for t in topic_types:
+    if t.name == topic_name:
+        image_topic_type = t.type
+
+if image_topic_type is None:
+    raise ValueError(f"Topic '{topic_name}' not found in bag.")
+
+msg_type = get_message(image_topic_type)
+
+frame_id = 0
+while reader.has_next():
+    (topic, data, t) = reader.read_next()
+    if topic == topic_name:
+        msg = deserialize_message(data, msg_type)
+        np_arr = np.frombuffer(msg.data, dtype=np.uint8).reshape(msg.height, msg.width, -1)
+        cv2.imwrite(os.path.join(output_dir, f"frame_{frame_id:05d}.jpg"), np_arr)
+        frame_id += 1
+        if frame_id % 100 == 0:
+            print(f"Saved {frame_id} frames...")
+
+print(f"✅ Extraction complete: {frame_id} frames saved to {output_dir}")
+
+----------------------------------
+
+3. Run it:
+
+Activate your ROS2 workspace and run:
+
+source ~/Downloads/Harish_Thesis/ros2_humble/install/setup.bash
+python3 extract_rgb_from_bag.py
+
+4. (Optional) Combine frames into a video:
+
+Once frames are extracted (e.g., frame_00000.jpg → frame_01467.jpg), create a video using ffmpeg:
+
+-- CODE ---
+sudo apt install ffmpeg
+ffmpeg -framerate 30 -i extracted_rgb_frames/frame_%05d.jpg -c:v libx264 -pix_fmt yuv420p rgb_video.mp4
+
+----------------
+
+Now you’ll have a playable video file: rgb_video.mp4

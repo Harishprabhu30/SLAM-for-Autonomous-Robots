@@ -1,0 +1,117 @@
+do this whenever sourcing ros2 throws path error (cmake build error)
+
+echo 'export COLCON_CURRENT_PREFIX=~/Downloads/Harish_Thesis/ros2_humble/install' >> ~/.bashrc
+echo 'source ~/Downloads/Harish_Thesis/ros2_humble/install/local_setup.sh' >> ~/.bashrc
+
+
+###################3
+
+for sourcing robot_localization package which has ekf_nodes and ukf_nodes:
+
+source /opt/ros/humble/setup.bash
+cd ~/Downloads/Harish_Thesis/ros2_humble
+source install/setup.bash
+
+-------------
+Then confirm detection:
+
+ros2 pkg prefix robot_localization
+
+✅ Expected output:
+
+/opt/ros/humble
+
+
+If that works — you’re done!!!!!!!!1
+-----------------------------------
+
+CLEANING BUILD OF CREATED ROS NODES:
+
+rm -rf build/jetbot_control install/jetbot_control log
+colcon build --packages-select jetbot_control --symlink-install
+source install/setup.bash
+
+-----------------------------------
+################################333
+ros2 commands:
+## list the nodes
+ros2 topic list
+
+## can see/fetches the sensor values from isaacsim
+ros2 topic echo /joint_states
+
+## publish the values to isaac sim's jetbot.
+ros2 topic pub /cmd_vel geometry_msgs/Twist "{linear: {x: 0.2, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.5}}" -r 10
+
+
+
+Useful ROS 2 commands:
+
+ros2 topic list
+
+ros2 topic info /<topic>
+
+ros2 msg show <MsgType> (e.g. ros2 msg show nav_msgs/msg/Odometry)
+
+ros2 topic echo /odom (peek payload)
+
+ros2 topic hz /rgb and ros2 topic hz /odom (measure rates)
+
+ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.2}, angular: {z: 0.1}}' (quick test)
+
+
+nodes of jetbot:
+/cmd_vel → geometry_msgs/msg/Twist
+
+/odom → nav_msgs/msg/Odometry
+
+/joint_states → sensor_msgs/msg/JointState
+
+/rgb → sensor_msgs/msg/Image
+
+/depth → sensor_msgs/msg/Image (depth encoding)
+
+/camera_info → sensor_msgs/msg/CameraInfo
+
+/tf & /tf_static → tf2_msgs/TFMessage
+
+
+
+
+
+
+## It’ll generate a PDF showing the TF tree (odom → chassis → wheels → camera, etc.).
+
+Output:
+Result:tf2_msgs.srv.FrameGraph_Response(frame_yaml="chassis: \n parent: 'odom'\n broadcaster: 'default_authority'\n rate: 121.579\n most_recent_transform: 572.766697\n oldest_transform: 571.500030\n buffer_length: 1.267\nleft_wheel: \n parent: 'chassis'\n broadcaster: 'default_authority'\n rate: 60.789\n most_recent_transform: 572.766697\n oldest_transform: 571.500030\n buffer_length: 1.267\nright_wheel: \n parent: 'chassis'\n broadcaster: 'default_authority'\n rate: 60.789\n most_recent_transform: 572.766697\n oldest_transform: 571.500030\n buffer_length: 1.267\nodom: \n parent: 'world'\n broadcaster: 'default_authority'\n rate: 60.800\n most_recent_transform: 572.750030\n oldest_transform: 571.500030\n buffer_length: 1.250\n")
+
+
+
+
+Explanation: 
+
+world
+ └── odom
+      └── chassis
+           ├── left_wheel
+           └── right_wheel
+1️⃣ world → odom
+The odom frame is being published (likely from Isaac’s ROS2 Odometry publisher).
+
+This transform lets your robot move in a local coordinate frame without resetting its position.
+
+Frequency: ~60 Hz, which is great.
+
+2️⃣ odom → chassis
+The chassis frame represents the Jetbot’s base link (body).
+
+This transform updates as your Jetbot moves.
+
+Frequency: ~120 Hz, which is ideal for smooth motion and odometry accuracy.
+
+3️⃣ chassis → left_wheel and chassis → right_wheel
+Each wheel joint is correctly being broadcast relative to the chassis.
+
+Frequency: ~60 Hz, matching the joint state updates you saw earlier.
+
+Confirms the wheel encoders → TF → RViz visualization pipeline is healthy.

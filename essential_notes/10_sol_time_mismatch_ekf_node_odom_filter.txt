@@ -1,0 +1,86 @@
+Problem with timing mismath, ekf recieving old data from odom. Before that, we were setting odom_frame in ekf.yaml to odom which is correct as it is expected by ekf_node of robot_localization.
+
+but in the isaac, our TF publisher's prim was set to world, which cause the timing mismatch, so we cahnge the parentprim of TFPUBLISHER -> /world/odom 
+
+for this, we created a empty XFORM under WORLD, then added it to TFPUB parent prim.
+
+structure was corrected, from odom (odom_frame) -> chassis (base_link_frame)
+
+then, the it showed the same error lines:
+
+[cmd_vel_pub_py-1] [INFO] [1760543546.093479782] [cmd_vel_pub_py]: pub cmd_vel: lin: 0.10, ang: 0.00
+[cmd_vel_pub_py-1] [INFO] [1760543546.143441377] [cmd_vel_pub_py]: pub cmd_vel: lin: 0.10, ang: 0.00
+[cmd_vel_pub_py-1] [INFO] [1760543546.193532339] [cmd_vel_pub_py]: pub cmd_vel: lin: 0.10, ang: 0.00
+[ekf_node-3] Warning: TF_OLD_DATA ignoring data from the past for frame chassis at time 16.383334 according to authority Authority undetectable
+[ekf_node-3] Possible reasons are listed at http://wiki.ros.org/tf/Errors%20explained
+[ekf_node-3]          at line 294 in /home/vgtu/Downloads/Harish_Thesis/ros2_humble/src/ros2/geometry2/tf2/src/buffer_core.cpp
+[ekf_node-3] Warning: TF_OLD_DATA ignoring data from the past for frame chassis at time 16.383334 according to authority Authority undetectable
+[ekf_node-3] Possible reasons are listed at http://wiki.ros.org/tf/Errors%20explained
+[ekf_node-3]          at line 294 in /home/vgtu/Downloads/Harish_Thesis/ros2_humble/src/ros2/geometry2/tf2/src/buffer_core.cpp
+[cmd_vel_pub_py-1] [INFO] [1760543546.243761505] [cmd_vel_pub_py]: pub cmd_vel: lin: 0.10, ang: 0.00
+[ekf_node-3] Warning: TF_OLD_DATA ignoring data from the past for frame chassis at time 16.400001 according to authority Authority undetectable
+
+
+now, we set param to use simulation time, this solved the error: 
+
+code: ros2 param set /ekf_filter_node use_sim_time true
+
+
+next, to make permanent sollution, trying :
+
+add this in launch file:
+--------------------CODE-----------------------
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+
+from launch.actions import TimerAction
+
+def generate_launch_description():
+    # Find the package share folder (first jetbot_control/)
+    pkg_share = FindPackageShare('jetbot_control').find('jetbot_control')
+
+    # Correct path to ekf.yaml in config/ (do NOT add extra 'jetbot_control')
+    ekf_config = PathJoinSubstitution([pkg_share, 'config', 'ekf.yaml'])
+    
+    # Define EKF node separately
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[ekf_config, {'use_sim_time': True}],  # important for Isaac Sim
+    )
+
+    # Delay EKF startup by 3 seconds
+    delayed_ekf = TimerAction(
+        period=3.0,
+        actions=[ekf_node]
+    )
+
+    return LaunchDescription([
+        Node(
+            package='jetbot_control',
+            executable='cmd_vel_pub_py',
+            name='cmd_vel_pub_py',
+            output='screen',
+        ),
+        Node(
+            package='jetbot_control',
+            executable='odom_with_cov_pub_py',
+            name='odom_with_cov_pub_py',
+            output='screen',
+        ),
+        # Uncomment if you want camera node
+        # Node(
+        #     package='jetbot_control',
+        #     executable='camera_sub_py',
+        #     name='camera_sub_py',
+        #     output='screen',
+        # ),
+        delayed_ekf,
+    ])
+----------------------------------------------------------------------------------------
+    
+

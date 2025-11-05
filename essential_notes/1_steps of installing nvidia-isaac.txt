@@ -1,0 +1,7 @@
+Now installing drivers.
+not uodating coz, we have the correct existing version to run.
+##############################3
+
+downloading isaac sim standalone version, its Assets like robots, sensors, environments, materials & props
+
+
