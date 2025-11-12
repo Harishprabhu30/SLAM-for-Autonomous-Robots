@@ -26,8 +26,9 @@ class CameraSub(Node):
 
     def image_callback(self, msg: Image):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        cv2.imshow('Jetbot RGB', frame)
-        cv2.waitKey(1)
+        # disabling display to improve performance as FPS is droping in isaac sim.
+        #cv2.imshow('Jetbot RGB', frame)
+        #cv2.waitKey(1)
 
 def main(args=None):
     rclpy.init(args=args)
