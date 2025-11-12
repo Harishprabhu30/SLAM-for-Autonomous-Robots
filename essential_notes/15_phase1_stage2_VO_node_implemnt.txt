@@ -1,0 +1,128 @@
+(Phase 1 — Stage 2)
+
+You already have:
+
+✅ Odometry (odom_with_cov) → EKF → /odometry/filtered
+
+✅ Camera node (camera_sub_py) publishing RGB and depth images
+
+Now you need to add a Visual Odometry (VO) node that:
+
+Takes camera frames from /rgb (and optionally /depth)
+
+Computes camera-based motion (pose, twist)
+
+Publishes a PoseWithCovarianceStamped or Odometry message
+
+EKF then fuses:
+
+/odom_with_cov  +  /vo (camera-based odometry)
+↓
+/odometry/filtered
+
+------------------------------------------------------------------------------------------------------
+Step 1 — Create a Visual Odometry Node
+
+- Create a new Python file inside jetbot_control/visual_odom_py.py
+
+- This node will:
+
+	1. Subscribe to /rgb (and /depth if 3D–2D VO)
+
+	2. Use OpenCV (cv2) + feature tracking (ORB, LK optical flow, etc.)
+
+	3. Estimate motion between frames
+
+	4. Publish the motion as a ROS2 nav_msgs/Odometry message, e.g. on topic /vo
+
+- File: visual_odom_py.py
+
+	1. Subscribes: /rgb
+
+	2. Publishes: /vo
+
+	3. Output type: nav_msgs/msg/Odometry
+
+	4. Use timestamps & frame_id = "camera_link"
+	
+------------------------------------------------------------------------------------------------------
+Step 2 — Update EKF Configuration
+
+Modify config/ekf.yaml:
+
+	1. Add the new topic input:
+
+	odom0: /odom_with_cov
+	odom1: /vo
+
+
+2. Enable fusion for position + orientation:
+
+	odom1_config: [true, true, true,  true, true, true,  false, false, false,  false, false, false,  false, false, false]
+	odom1_differential: false
+
+
+3. Make sure to set:
+
+	two_d_mode: true  # if you’re testing 2D VO
+
+
+4. Keep covariance values balanced so VO doesn’t dominate odom (e.g. 0.1–0.5 range).
+
+------------------------------------------------------------------------------------------------------
+Step 3 — Update the Launch File
+
+- Modify launch/jetbot_all.launch.py:
+
+	1. Add the new node:
+
+	Node(
+    		package='jetbot_control',
+    		executable='visual_odom_py',
+    		name='visual_odom_py',
+    		output='screen'
+	),
+
+	2. Ensure EKF node launches after both odom and visual_odom nodes (you can use TimerAction to delay EKF by 2–3s).
+	
+------------------------------------------------------------------------------------------------------
+**Step 4: Add an entry point for visual_odom_py inside entry_points in setup.py**
+
+entry_points={
+    'console_scripts': [
+        'cmd_vel_pub_py = jetbot_control.cmd_vel_pub_py:main',
+        'odom_with_cov_pub_py = jetbot_control.odom_with_cov_pub_py:main',
+        'tf_broadcaster_sim = jetbot_control.tf_broadcaster_sim:main',
+        'camera_sub_py = jetbot_control.camera_sub_py:main',
+        'visual_odom_py = jetbot_control.visual_odom_py:main',
+    ],
+},
+
+
+then colcon build --packages-select jetbot_control
+then ros2 launch jetbot_control jetbot_all.launch.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
