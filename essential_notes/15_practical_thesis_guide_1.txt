@@ -1,0 +1,113 @@
+**Phase 1 — Classical Visual Odometry + EKF Fusion**
+
+| Step | Description                                                       | Output                    |
+| ---- | ----------------------------------------------------------------- | ------------------------- |
+| 1️⃣  | Implement **2D–2D VO node** (camera only)                         | `/camera/odom_2d2d`       |
+| 2️⃣  | Fuse with wheel `/odom` via **EKF**                               | `/odometry/filtered_2d2d` |
+| 3️⃣  | Record rosbag                                                     | ✅                         |
+| 4️⃣  | Implement **3D–2D VO node** (use depth or stereo)                 | `/camera/odom_3d2d`       |
+| 5️⃣  | Fuse with wheel `/odom` via **EKF**                               | `/odometry/filtered_3d2d` |
+| 6️⃣  | Record rosbag                                                     | ✅                         |
+| 7️⃣  | Compare 2D–2D vs 3D–2D performance (drift, stability, covariance) | Quantitative evaluation   |
+
+
+🎯 Goal: show how fusing VO + odometry reduces drift and increases localization accuracy.
+
+That’s a solid Phase 1 — it can stand alone as a complete research chapter on classical VO + filtering.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+**Phase 2 — Advanced SLAM (ORB-SLAM3 / RTAB-Map)**
+
+| Task | Description                                                            |
+| ---- | ---------------------------------------------------------------------- |
+| 1️⃣  | Plug in **ORB-SLAM3** (mono or RGB-D) instead of your custom VO        |
+| 2️⃣  | Compare its `/odom` vs your `/camera/odom_2d2d` or `/camera/odom_3d2d` |
+| 3️⃣  | Optionally fuse ORB-SLAM odometry with wheel odom in EKF               |
+| 4️⃣  | Generate map (`/map`) and visualize trajectory                         |
+
+🎯 Goal: evaluate improvements due to keyframe-based mapping, loop closure, bundle adjustment, etc.
+
+This gives your thesis a benchmark comparison against state-of-the-art.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+**Phase 3 — AI / ML Integration**
+
+Two very strong, achievable directions:
+
+| Direction                          | Concept                                                                         | How you’d apply it                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **A. Learning in the VO pipeline** | Replace hand-crafted features (ORB, FAST) with ML-based (SuperPoint, SuperGlue) | Test if accuracy & robustness improve under blur, lighting changes |
+| **B. Learning in the EKF fusion**  | Use an LSTM or KalmanNet to learn noise/adaptive weights                        | Model learns bias or drift patterns → acts as intelligent denoiser |
+
+
+🎯 Goal: show how AI integration can learn non-linearities or unmodelled noise that classical filters can’t handle.
+
+That’s your “innovative” phase — perfect for thesis novelty.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Why and When to Use Datasets
+🔹 Your Own ROSBags
+
+Use these for:
+
+System validation in your JetBot + Isaac Sim setup.
+
+Testing the entire dataflow: camera → VO → EKF → filtered output.
+
+Checking timestamps, message formats, real integration.
+
+These show your implementation works end-to-end.
+
+🔹 Public Datasets (TUM RGB-D, KITTI, EuRoC)
+
+Use these for:
+
+Quantitative evaluation and comparative benchmarking.
+(e.g. comparing your VO vs ORB-SLAM vs DeepVO)
+
+They have ground truth trajectories → you can compute error metrics like:
+
+Absolute Trajectory Error (ATE)
+
+Relative Pose Error (RPE)
+
+They’re standardized — reviewers trust them.
+
+🧩 When:
+After your 2D–2D and 3D–2D VO nodes are implemented and working in ROS,
+you can feed dataset images into your VO node (instead of live camera) to test it under real-world sequences.
+
+For instance:
+
+TUM RGB-D → test your 3D–2D VO (since it includes depth)
+
+KITTI VO → test 2D–2D VO (stereo or mono version)
+
+Compare output /camera/odom trajectory against dataset ground truth.
+
+That gives you quantitative plots + error graphs for your thesis.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+| Source             | Sensor Type | Algorithm      | Fusion | Metric                |
+| ------------------ | ----------- | -------------- | ------ | --------------------- |
+| Isaac Sim (JetBot) | RGB         | 2D–2D VO       | EKF    | Drift vs Ground Truth |
+| Isaac Sim (JetBot) | RGB-D       | 3D–2D VO       | EKF    | Drift vs Ground Truth |
+| TUM RGB-D          | RGB-D       | 3D–2D VO       | —      | ATE, RPE              |
+| KITTI Odometry     | Mono/Stereo | 2D–2D VO       | —      | ATE, RPE              |
+| Isaac Sim          | RGB-D       | ORB-SLAM3      | EKF    | Accuracy, Map Quality |
+| Isaac Sim          | RGB-D       | AI-enhanced VO | EKF    | Drift, smoothness     |
+
+-------------------------------------------------------------------------------------------------------------------------
+Final Structure:
+
+| Phase            | Focus                   | Input              | Output                | Data              |
+| ---------------- | ----------------------- | ------------------ | --------------------- | ----------------- |
+| **1**            | VO (2D–2D, 3D–2D) + EKF | RGB / RGB-D + odom | Filtered pose         | JetBot rosbag     |
+| **2**            | ORB-SLAM / Mapping      | RGB / RGB-D        | Map + pose            | JetBot + dataset  |
+| **3**            | AI / ML Integration     | RGB / RGB-D + odom | Learned pose          | Dataset + JetBot  |
+| **4 (optional)** | Evaluation              | All above          | Quantitative analysis | TUM, KITTI, EuRoC |
+
