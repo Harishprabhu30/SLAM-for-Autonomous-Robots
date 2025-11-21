@@ -29,10 +29,10 @@ def generate_launch_description():
 
     return LaunchDescription([
         Node(
-            package='jetbot_control',
-            executable='cmd_vel_pub_py',
-            name='cmd_vel_pub_py',
-            output='screen',
+           package='jetbot_control',
+           executable='cmd_vel_pub_py',
+           name='cmd_vel_pub_py',
+           output='screen',
         ),
         Node(
             package='jetbot_control',
@@ -48,12 +48,18 @@ def generate_launch_description():
             parameters=[{'use_sim_time': True}],
         ),
         # Uncomment if you want camera node
-        # Node(
-        #     package='jetbot_control',
-        #     executable='camera_sub_py',
-        #     name='camera_sub_py',
-        #     output='screen',
-        # ),
+        Node(
+            package='jetbot_control',
+            executable='camera_sub_py',
+            name='camera_sub_py',
+            output='screen',
+        ),
+        #Node(
+        #   package='jetbot_control',
+        #   executable='visual_odom_py',
+        #   name='visual_odom_py',
+        #   output='screen'
+        #),
         delayed_ekf,
     ])
 
